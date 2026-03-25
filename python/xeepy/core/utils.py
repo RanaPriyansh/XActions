@@ -35,45 +35,58 @@ def extract_tweet_id(url: str) -> str | None:
         >>> extract_tweet_id("https://twitter.com/user/status/1234567890?s=20")
         '1234567890'
     """
+    # Plain numeric ID
+    if url.isdigit():
+        return url
+
     patterns = [
         r"(?:twitter\.com|x\.com)/\w+/status/(\d+)",
         r"/status/(\d+)",
     ]
-    
+
     for pattern in patterns:
         match = re.search(pattern, url)
         if match:
             return match.group(1)
-    
+
     return None
 
 
 def extract_username(url: str) -> str | None:
     """
-    Extract username from a Twitter/X profile URL.
-    
+    Extract username from a Twitter/X profile URL or plain @handle.
+
     Args:
-        url: Profile URL.
-        
+        url: Profile URL or username (with or without @).
+
     Returns:
         Username string (without @) or None if not found.
-        
+
     Examples:
         >>> extract_username("https://x.com/elonmusk")
         'elonmusk'
-        >>> extract_username("https://twitter.com/elonmusk/followers")
+        >>> extract_username("@elonmusk")
+        'elonmusk'
+        >>> extract_username("elonmusk")
         'elonmusk'
     """
+    if not url:
+        return None
+    # Plain @handle or bare username (no slashes)
+    if "/" not in url:
+        stripped = url.lstrip("@")
+        return stripped if stripped else None
+
     patterns = [
         r"(?:twitter\.com|x\.com)/(@?\w+)(?:/|$|\?)",
     ]
-    
+
     for pattern in patterns:
         match = re.search(pattern, url)
         if match:
             username = match.group(1)
             return username.lstrip("@")
-    
+
     return None
 
 
@@ -498,3 +511,21 @@ def add_query_params(url: str, params: dict[str, str]) -> str:
     # Rebuild URL
     new_query = urlencode(existing_params, doseq=True)
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}?{new_query}"
+
+
+def is_valid_tweet_id(tweet_id: str) -> bool:
+    """Check if a string is a valid tweet ID (numeric, non-empty)."""
+    return bool(tweet_id) and tweet_id.isdigit()
+
+
+
+def format_number(n: int) -> str:
+    """Format a number as a human-readable string (e.g. 1500 -> 1.5K)."""
+    if n >= 1_000_000_000:
+        return f"{n / 1_000_000_000:.1f}B"
+    if n >= 1_000_000:
+        return f"{n / 1_000_000:.1f}M"
+    if n >= 1_000:
+        return f"{n / 1_000:.1f}K"
+    return str(n)
+

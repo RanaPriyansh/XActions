@@ -7,6 +7,7 @@ Analyze sentiment of tweets, conversations, and mentions.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 from loguru import logger
@@ -14,22 +15,50 @@ from loguru import logger
 from xeepy.ai.providers.base import AIProvider
 
 
+class SentimentLabel(Enum):
+    """Sentiment classification labels."""
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+    NEUTRAL = "neutral"
+    MIXED = "mixed"
+
+
 @dataclass
 class SentimentResult:
     """Result of sentiment analysis for a single text.
-    
+
     Attributes:
         text: The analyzed text.
+        label: Classification label.
         score: Sentiment score from -1 (negative) to 1 (positive).
-        label: Classification label ('positive', 'negative', 'neutral').
         confidence: Confidence in the classification (0-1).
         emotions: Detected emotions with their intensities.
     """
     text: str
+    label: SentimentLabel
     score: float
-    label: str
     confidence: float
     emotions: dict[str, float] = field(default_factory=dict)
+
+
+@dataclass
+class BatchSentimentResult:
+    """Aggregated sentiment results for a batch of texts.
+
+    Attributes:
+        results: Individual sentiment results.
+        total_analyzed: Total number of texts analyzed.
+        average_score: Average sentiment score.
+        positive_count: Count of positive texts.
+        negative_count: Count of negative texts.
+        neutral_count: Count of neutral texts.
+    """
+    results: list[SentimentResult]
+    total_analyzed: int
+    average_score: float
+    positive_count: int
+    negative_count: int
+    neutral_count: int
 
 
 @dataclass

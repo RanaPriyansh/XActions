@@ -15,6 +15,15 @@ from loguru import logger
 
 
 @dataclass
+class RateLimitConfig:
+    """Configuration for rate limiting."""
+    requests_per_minute: int = 30
+    requests_per_hour: int = 300
+    min_delay: float = 0.5
+    max_delay: float = 1.5
+
+
+@dataclass
 class RateLimitState:
     """Tracks rate limit state."""
     requests: deque = field(default_factory=lambda: deque(maxlen=1000))
@@ -27,21 +36,57 @@ class RateLimitState:
 class RateLimiter:
     """
     Rate limiter with sliding window and adaptive delays.
-    
-    Supports per-minute and per-hour limits with jitter.
+
+    Accepts either a RateLimitConfig or keyword arguments for backwards
+    compatibility.
     """
-    
+
     def __init__(
         self,
+        config: Optional["RateLimitConfig"] = None,
         max_per_minute: int = 30,
         max_per_hour: int = 300,
         jitter_range: tuple[float, float] = (0.5, 1.5),
     ):
-        self.max_per_minute = max_per_minute
-        self.max_per_hour = max_per_hour
-        self.jitter_range = jitter_range
+        if config is not None:
+            self.max_per_minute = config.requests_per_minute
+            self.max_per_hour = config.requests_per_hour
+            self.jitter_range = (config.min_delay, config.max_delay)
+        else:
+            self.max_per_minute = max_per_minute
+            self.max_per_hour = max_per_hour
+            self.jitter_range = jitter_range
         self.state = RateLimitState()
         self._lock = asyncio.Lock()
+        # Per-action history: {action_name: [timestamps]}
+        self._history: dict[str, list[float]] = {}
+
+    async def wait(self, action: str = "default") -> float:
+        """Wait appropriate delay for the given action and record it."""
+        delay = random.uniform(self.jitter_range[0], self.jitter_range[1])
+        await asyncio.sleep(delay)
+        now = time.time()
+        self._history.setdefault(action, []).append(now)
+        self.state.requests.append(now)
+        self.state.last_request_time = now
+        self.state.total_requests += 1
+        return delay
+
+    def remaining(self, action: str = "default") -> int:
+        """Return estimated remaining requests in the current minute."""
+        now = time.time()
+        minute_ago = now - 60
+        recent = sum(1 for t in self.state.requests if t > minute_ago)
+        return max(0, self.max_per_minute - recent)
+
+    def is_limited(self, action: str = "default") -> bool:
+        """Return True if the rate limit has been reached."""
+        return self.remaining(action) == 0
+
+    def reset(self) -> None:
+        """Reset all state and history."""
+        self.state = RateLimitState()
+        self._history = {}
     
     async def acquire(self, weight: int = 1) -> float:
         """

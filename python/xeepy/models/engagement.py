@@ -25,26 +25,33 @@ class EngagementMetrics:
         timestamp: When these metrics were recorded.
     """
     
-    tweet_id: str
+    tweet_id: str = ""
     likes: int = 0
     retweets: int = 0
     replies: int = 0
     quotes: int = 0
     views: int = 0
     bookmarks: int = 0
+    impressions: int = 0
     timestamp: datetime = field(default_factory=datetime.now)
-    
+
     @property
     def total_engagement(self) -> int:
         """Total engagement actions."""
         return self.likes + self.retweets + self.replies + self.quotes
-    
+
+    @property
+    def total_engagements(self) -> int:
+        """Alias for total_engagement."""
+        return self.total_engagement
+
     @property
     def engagement_rate(self) -> float:
-        """Engagement rate (engagement / views)."""
-        if self.views == 0:
+        """Engagement rate as a percentage (engagement / impressions * 100)."""
+        base = self.impressions or self.views
+        if base == 0:
             return 0.0
-        return self.total_engagement / self.views
+        return self.total_engagement / base * 100
     
     @property
     def like_rate(self) -> float:

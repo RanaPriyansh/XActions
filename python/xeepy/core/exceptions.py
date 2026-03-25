@@ -48,3 +48,13 @@ class ConfigurationError(XeepyError):
 class NetworkError(XeepyError):
     """Raised when network operations fail."""
     pass
+
+
+class ScrapingError(XeepyError):
+    """Raised when a scraping operation fails."""
+    pass
+
+
+class PaginationError(XeepyError):
+    """Raised when pagination fails during scraping."""
+    pass

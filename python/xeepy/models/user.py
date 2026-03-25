@@ -34,9 +34,9 @@ class User:
         pinned_tweet_id: ID of pinned tweet (if any).
     """
     
-    id: str
-    username: str
-    display_name: str
+    id: str = ""
+    username: str = ""
+    display_name: str = ""
     bio: str = ""
     location: str = ""
     website: str = ""
@@ -51,11 +51,19 @@ class User:
     profile_image_url: str = ""
     banner_url: str = ""
     pinned_tweet_id: str | None = None
-    
+    user_id: str = ""
+
     # Metadata
     scraped_at: datetime = field(default_factory=datetime.now)
     raw_data: dict[str, Any] = field(default_factory=dict)
-    
+
+    def __post_init__(self) -> None:
+        # Allow either 'id' or 'user_id' as the primary key
+        if self.user_id and not self.id:
+            self.id = self.user_id
+        elif self.id and not self.user_id:
+            self.user_id = self.id
+
     @property
     def profile_url(self) -> str:
         """Get the full URL to this user's profile."""
@@ -107,7 +115,8 @@ class User:
             scraped_at = datetime.now()
         
         return cls(
-            id=data.get("id", ""),
+            id=data.get("id", "") or data.get("user_id", ""),
+            user_id=data.get("user_id", "") or data.get("id", ""),
             username=data.get("username", ""),
             display_name=data.get("display_name", ""),
             bio=data.get("bio", ""),
@@ -137,6 +146,7 @@ class User:
         """
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "username": self.username,
             "display_name": self.display_name,
             "bio": self.bio,

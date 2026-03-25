@@ -7,11 +7,21 @@ Generate AI-powered content including tweets, replies, threads, and bios.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 from loguru import logger
 
 from xeepy.ai.providers.base import AIProvider, Message
+
+
+class ContentType(Enum):
+    """Type of content to generate."""
+    TWEET = "tweet"
+    REPLY = "reply"
+    THREAD = "thread"
+    BIO = "bio"
+    DM = "dm"
 
 
 # Style presets for content generation
@@ -31,17 +41,33 @@ STYLES = {
 @dataclass
 class GeneratedContent:
     """Generated content result.
-    
+
     Attributes:
         content: The generated text content.
         style: Style used for generation.
+        content_type: Type of content generated.
         tokens_used: Total tokens used for generation.
         alternatives: Alternative versions (if requested).
     """
     content: str
     style: str
+    content_type: ContentType = ContentType.TWEET
     tokens_used: int = 0
     alternatives: list[str] | None = None
+
+
+@dataclass
+class TweetThread:
+    """A sequence of tweets forming a thread.
+
+    Attributes:
+        tweets: List of tweet texts.
+        total_tweets: Total number of tweets.
+        total_characters: Total character count across all tweets.
+    """
+    tweets: list[str]
+    total_tweets: int
+    total_characters: int
 
 
 class ContentGenerator:

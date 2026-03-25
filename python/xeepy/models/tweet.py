@@ -42,7 +42,7 @@ class Tweet:
         language: Detected language code.
     """
     
-    id: str
+    id: str = ""
     author: User | None = None
     text: str = ""
     timestamp: datetime | None = None
@@ -52,7 +52,10 @@ class Tweet:
     quotes: int = 0
     views: int = 0
     bookmarks: int = 0
-    
+    tweet_id: str = ""
+    author_username: str = ""
+    media_urls: list[str] = field(default_factory=list)
+
     # Media and content
     media: list[str] = field(default_factory=list)
     media_types: list[str] = field(default_factory=list)  # 'image', 'video', 'gif'
@@ -60,7 +63,7 @@ class Tweet:
     mentions: list[str] = field(default_factory=list)
     urls: list[str] = field(default_factory=list)
     card_url: str = ""  # URL card/preview
-    
+
     # Tweet type flags
     is_retweet: bool = False
     is_quote: bool = False
@@ -68,7 +71,7 @@ class Tweet:
     is_thread: bool = False
     is_pinned: bool = False
     is_sensitive: bool = False
-    
+
     # Related tweets
     reply_to_id: str = ""
     reply_to_user: str = ""
@@ -76,15 +79,26 @@ class Tweet:
     retweeted_tweet_id: str = ""
     conversation_id: str = ""
     thread_id: str = ""
-    
+
     # Additional metadata
     language: str = ""
     source: str = ""  # e.g., "Twitter Web App"
-    
+
     # Metadata
     scraped_at: datetime = field(default_factory=datetime.now)
     raw_data: dict[str, Any] = field(default_factory=dict)
-    
+
+    def __post_init__(self) -> None:
+        # Allow either 'id' or 'tweet_id' as the primary key
+        if self.tweet_id and not self.id:
+            self.id = self.tweet_id
+        elif self.id and not self.tweet_id:
+            self.tweet_id = self.id
+        # Allow author_username as shorthand
+        if self.author_username and self.author is None:
+            self.author = User(id=self.author_username, username=self.author_username,
+                               display_name=self.author_username)
+
     @property
     def url(self) -> str:
         """Get the full URL to this tweet."""
@@ -207,6 +221,7 @@ class Tweet:
         """
         return {
             "id": self.id,
+            "tweet_id": self.tweet_id,
             "author": self.author.to_dict() if self.author else None,
             "text": self.text,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
