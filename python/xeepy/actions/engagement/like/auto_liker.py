@@ -53,13 +53,16 @@ class AutoLiker(BaseAction):
         self,
         browser: BrowserManager,
         rate_limiter: Optional[RateLimiter] = None,
+        config: Optional[AutoLikeConfig] = None,
         dry_run: bool = False,
     ):
         self.browser = browser
         self.rate_limiter = rate_limiter
+        self.config = config
         self.dry_run = dry_run
         self._cancelled = False
         self._paused = False
+        self._running = False
         self._liked_tweets: set = set()
         self._session_likes = 0
         self._hourly_likes = 0

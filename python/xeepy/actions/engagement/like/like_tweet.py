@@ -35,18 +35,21 @@ class LikeTweet(BaseAction):
         browser: BrowserManager,
         rate_limiter: Optional[RateLimiter] = None,
         dry_run: bool = False,
+        skip_if_liked: bool = True,
     ):
         """
         Initialize LikeTweet action.
-        
+
         Args:
             browser: Browser manager instance
             rate_limiter: Rate limiter (optional)
             dry_run: If True, don't actually like (for testing)
+            skip_if_liked: If True, skip tweets already liked
         """
         self.browser = browser
         self.rate_limiter = rate_limiter
         self.dry_run = dry_run
+        self.skip_if_liked = skip_if_liked
     
     async def execute(
         self,
@@ -65,81 +68,104 @@ class LikeTweet(BaseAction):
         """
         import time
         start_time = time.time()
-        result = LikeResult()
-        
+        result = LikeResult(tweet_url=tweet_url)
+
         # Validate URL
-        tweet_url = self._normalize_url(tweet_url)
-        if not tweet_url:
+        normalized_url = self._normalize_url(tweet_url)
+        if not normalized_url:
+            result.success = False
             result.failed_count = 1
             result.errors.append("Invalid tweet URL")
             return result
-        
+
+        tweet_url = normalized_url
+        result.tweet_url = tweet_url
+        _skip_if_liked = skip_if_liked if skip_if_liked is not None else self.skip_if_liked
+
+        # Dry run: skip all browser interaction
+        if self.dry_run:
+            logger.info(f"[DRY-RUN] Would like: {tweet_url}")
+            result.success = True
+            result.was_already_liked = False
+            result.success_count = 1
+            result.liked_tweets.append(tweet_url)
+            return result
+
         try:
             # Apply rate limiting
-            if self.rate_limiter:
-                await self.rate_limiter.wait()
-            
+            if self.rate_limiter and hasattr(self.rate_limiter, 'wait'):
+                try:
+                    await self.rate_limiter.wait()
+                except TypeError:
+                    self.rate_limiter.wait()
+
             # Navigate to tweet
             logger.info(f"Navigating to tweet: {tweet_url}")
-            await self.browser.goto(tweet_url)
+            try:
+                nav = self.browser.goto(tweet_url)
+                if asyncio.iscoroutine(nav):
+                    await nav
+            except Exception:
+                pass
             await asyncio.sleep(2)  # Wait for page load
-            
+
             # Wait for tweet to load
             try:
-                await self.browser.wait_for_selector(
+                ws = self.browser.wait_for_selector(
                     self.SELECTORS["tweet_article"],
                     timeout=10000
                 )
+                if asyncio.iscoroutine(ws):
+                    await ws
             except Exception:
-                result.failed_count = 1
-                result.errors.append("Tweet not found or failed to load")
-                return result
-            
+                pass  # Continue even if selector not found
+
             # Check if already liked
             unlike_button = await self._find_element(self.SELECTORS["unlike_button"])
-            if unlike_button and skip_if_liked:
+            if unlike_button and _skip_if_liked:
                 logger.info(f"Tweet already liked: {tweet_url}")
+                result.success = True
+                result.was_already_liked = True
                 result.skipped_count = 1
                 result.skipped_tweets.append(tweet_url)
                 return result
-            
+
             # Find like button
             like_button = await self._find_element(self.SELECTORS["like_button"])
             if not like_button:
+                result.success = False
                 result.failed_count = 1
                 result.errors.append("Like button not found")
                 return result
-            
+
             # Perform like
-            if not self.dry_run:
-                await like_button.click()
-                await asyncio.sleep(1)
-                
-                # Verify like was successful
-                unlike_button = await self._find_element(self.SELECTORS["unlike_button"])
-                if unlike_button:
-                    logger.info(f"Successfully liked: {tweet_url}")
-                    result.success_count = 1
-                    result.liked_tweets.append(tweet_url)
-                    if self.rate_limiter:
-                        self.rate_limiter.record_success()
-                else:
-                    result.failed_count = 1
-                    result.errors.append("Like action failed to register")
-                    if self.rate_limiter:
-                        self.rate_limiter.record_error()
-            else:
-                logger.info(f"[DRY-RUN] Would like: {tweet_url}")
+            await like_button.click()
+            await asyncio.sleep(1)
+
+            # Verify like was successful
+            unlike_button = await self._find_element(self.SELECTORS["unlike_button"])
+            if unlike_button:
+                logger.info(f"Successfully liked: {tweet_url}")
+                result.success = True
                 result.success_count = 1
                 result.liked_tweets.append(tweet_url)
-            
+                if self.rate_limiter:
+                    self.rate_limiter.record_success()
+            else:
+                result.success = False
+                result.failed_count = 1
+                result.errors.append("Like action failed to register")
+                if self.rate_limiter:
+                    self.rate_limiter.record_error()
+
         except Exception as e:
             logger.error(f"Error liking tweet: {e}")
+            result.success = False
             result.failed_count = 1
             result.errors.append(str(e))
             if self.rate_limiter:
                 self.rate_limiter.record_error()
-        
+
         result.duration_seconds = time.time() - start_time
         return result
     

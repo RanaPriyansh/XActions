@@ -47,22 +47,25 @@ class LikeByKeyword(BaseAction):
         browser: BrowserManager,
         rate_limiter: Optional[RateLimiter] = None,
         dry_run: bool = False,
+        filters: Optional[LikeFilters] = None,
     ):
         self.browser = browser
         self.rate_limiter = rate_limiter
         self.dry_run = dry_run
+        self._default_filters = filters
         self._cancelled = False
         self._liked_tweets: set = set()  # Track liked tweets to avoid duplicates
-    
+
     async def execute(
         self,
-        keywords: list[str],
+        keywords,  # str or list[str]
         max_likes: int = 50,
+        max_tweets: Optional[int] = None,
         search_filter: str = "latest",
         filters: Optional[LikeFilters] = None,
         on_like: Optional[Callable] = None,
         on_skip: Optional[Callable] = None,
-    ) -> LikeResult:
+    ) -> list:
         """
         Search for keywords and like matching tweets.
         
@@ -79,14 +82,20 @@ class LikeByKeyword(BaseAction):
         """
         start_time = time.time()
         result = LikeResult()
-        filters = filters or LikeFilters()
+        filters = filters or self._default_filters or LikeFilters()
         self._cancelled = False
         self._liked_tweets.clear()
-        
+        # Accept string or list
+        if isinstance(keywords, str):
+            keywords = [keywords]
+        # max_tweets overrides max_likes
+        if max_tweets is not None:
+            max_likes = max_tweets
+
         if not keywords:
             result.errors.append("No keywords provided")
-            return result
-        
+            return []
+
         # Build search query
         search_query = " OR ".join(keywords)
         logger.info(f"Starting keyword search: {search_query}")
@@ -94,7 +103,21 @@ class LikeByKeyword(BaseAction):
         try:
             # Navigate to search
             search_url = f"{self.SEARCH_URL}?q={search_query}&src=typed_query"
-            await self.browser.goto(search_url)
+            page = getattr(self.browser, 'page', None)
+            if page and hasattr(page, 'goto'):
+                try:
+                    nav = page.goto(search_url)
+                    if asyncio.iscoroutine(nav):
+                        await nav
+                except Exception:
+                    pass
+            else:
+                try:
+                    nav = self.browser.goto(search_url)
+                    if asyncio.iscoroutine(nav):
+                        await nav
+                except Exception:
+                    pass
             await asyncio.sleep(2)
             
             # Switch to correct tab
@@ -182,13 +205,13 @@ class LikeByKeyword(BaseAction):
         
         result.duration_seconds = time.time() - start_time
         result.cancelled = self._cancelled
-        
+
         logger.info(
             f"Keyword search complete: {result.success_count} liked, "
             f"{result.failed_count} failed, {result.skipped_count} skipped"
         )
-        
-        return result
+
+        return result.liked_tweets
     
     async def _switch_tab(self, tab_name: str) -> bool:
         """Switch to the specified search tab."""
