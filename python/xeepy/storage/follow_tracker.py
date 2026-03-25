@@ -308,7 +308,7 @@ class FollowTracker:
         row = self.db.fetchone('''
             SELECT action_type FROM follow_actions
             WHERE username = ?
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, id DESC
             LIMIT 1
         ''', (username,))
         

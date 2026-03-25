@@ -420,8 +420,14 @@ class TimeSeriesStorage:
         Returns:
             Dictionary with change information
         """
-        series = self.get_series(metric_name, entity_id, days=days)
-        
+        from datetime import timedelta as _td
+        now = datetime.utcnow()
+        series = self.get_series(
+            metric_name, entity_id,
+            start_date=now - _td(days=days, seconds=60),
+            end_date=now,
+        )
+
         if len(series.data_points) < 2:
             return None
         

@@ -369,7 +369,7 @@ class FollowFilters:
     max_followers: int = 100000
     min_following: int = 0
     max_following: int = 50000
-    min_tweets: int = 10
+    min_tweets: int = 0
     max_tweets: Optional[int] = None
     min_account_age_days: int = 30
     must_have_bio: bool = True
@@ -429,34 +429,34 @@ class FollowFilters:
             if age_days < self.min_account_age_days:
                 return False, f"Account too new ({age_days} < {self.min_account_age_days} days)"
         
+        # Verified check (before bio/pic checks so explicit filter takes priority)
+        if self.exclude_verified and is_verified:
+            return False, "Verified account excluded"
+
+        # Protected check
+        if self.exclude_protected and is_protected:
+            return False, "Protected account excluded"
+
         # Bio checks
         if self.must_have_bio and not bio:
             return False, "No bio"
-        
+
         if self.keywords_in_bio:
             bio_lower = bio.lower()
             if not any(kw.lower() in bio_lower for kw in self.keywords_in_bio):
                 return False, "Bio doesn't contain required keywords"
-        
+
         if self.exclude_keywords_in_bio and bio:
             bio_lower = bio.lower()
             for kw in self.exclude_keywords_in_bio:
                 if kw.lower() in bio_lower:
                     return False, f"Bio contains excluded keyword: {kw}"
-        
+
         # Profile pic check
         if self.must_have_profile_pic and not has_profile_pic:
             return False, "No profile picture"
         if self.exclude_default_pic and not has_profile_pic:
             return False, "Default profile picture"
-        
-        # Verified check
-        if self.exclude_verified and is_verified:
-            return False, "Verified account excluded"
-        
-        # Protected check
-        if self.exclude_protected and is_protected:
-            return False, "Protected account excluded"
         
         # Follower ratio check
         if following > 0:

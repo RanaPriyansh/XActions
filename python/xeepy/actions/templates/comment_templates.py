@@ -292,13 +292,18 @@ class CommentTemplates:
         hashtags = hashtags or []
         hashtags_lower = [h.lower() for h in hashtags]
         
+        # Detect question/seeking advice (check before topic keywords)
+        if "?" in tweet_text:
+            # It's a question, might want to engage
+            return cls.get_random("engagement")
+
         # Detect crypto/web3 content
-        crypto_keywords = ["crypto", "bitcoin", "ethereum", "btc", "eth", "nft", 
+        crypto_keywords = ["crypto", "bitcoin", "ethereum", "btc", "eth", "nft",
                          "defi", "web3", "blockchain", "wagmi", "gm", "dao"]
         if any(kw in text_lower for kw in crypto_keywords) or \
            any(tag in hashtags_lower for tag in crypto_keywords):
             return cls.get_random("crypto")
-        
+
         # Detect tech content
         tech_keywords = ["coding", "programming", "developer", "javascript", "python",
                         "react", "api", "deploy", "open source", "github", "code"]
@@ -322,11 +327,6 @@ class CommentTemplates:
                               "milestone", "anniversary", "promoted", "hired"]
         if any(kw in text_lower for kw in achievement_keywords):
             return cls.get_random("supportive")
-        
-        # Detect question/seeking advice
-        if "?" in tweet_text:
-            # It's a question, might want to engage
-            return cls.get_random("engagement")
         
         # Default to appreciation
         return cls.get_random("appreciation")

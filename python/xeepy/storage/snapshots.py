@@ -102,20 +102,20 @@ class SnapshotStorage:
     
     def save_snapshot(
         self,
-        username: str,
         snapshot_type: str,
+        username: str,
         users: set[str],
         metadata: Optional[dict] = None,
     ) -> str:
         """
         Save a snapshot of users (followers or following).
-        
+
         Args:
-            username: Account username
             snapshot_type: Type of snapshot ('followers' or 'following')
+            username: Account username
             users: Set of usernames in the snapshot
             metadata: Optional additional metadata
-            
+
         Returns:
             Snapshot ID for later retrieval
         """
@@ -396,22 +396,22 @@ class SnapshotStorage:
     
     def compare_snapshots(
         self,
-        username: str,
         snapshot_type: str,
+        username: str,
         old_snapshot_id: Optional[str] = None,
         new_snapshot_id: Optional[str] = None,
     ) -> Optional[tuple[set[str], set[str]]]:
         """
         Compare two snapshots to find changes.
-        
+
         Args:
-            username: Account username
             snapshot_type: Type of snapshot
+            username: Account username
             old_snapshot_id: Older snapshot ID (None = second latest)
             new_snapshot_id: Newer snapshot ID (None = latest)
-            
+
         Returns:
-            Tuple of (removed users, added users) or None if insufficient data
+            Tuple of (added users, removed users) or None if insufficient data
         """
         snapshots = self.list_snapshots(username, snapshot_type, limit=2)
         
@@ -432,9 +432,17 @@ class SnapshotStorage:
         
         removed = old_users - new_users
         added = new_users - old_users
-        
-        return removed, added
+
+        return added, removed
     
+    def load_latest_snapshot(self, snapshot_type: str, username: str) -> Optional[set[str]]:
+        """Load the most recent snapshot (alias with (snapshot_type, username) order)."""
+        return self.load_snapshot(username, snapshot_type)
+
+    def get_snapshot_metadata(self, snapshot_type: str, username: str, limit: int = 100) -> list[SnapshotMetadata]:
+        """List snapshots (alias with (snapshot_type, username) arg order)."""
+        return self.list_snapshots(username, snapshot_type, limit=limit)
+
     def get_stats(self) -> dict:
         """Get storage statistics"""
         with sqlite3.connect(self.db_path) as conn:
