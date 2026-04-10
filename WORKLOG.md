@@ -4,6 +4,44 @@
 
 ## 2026-04-10
 
+### Session Summary (21:22 CET) — Builder Engine
+
+**Status**: Active development, npm script added
+
+#### Latest Addition
+- ✅ Added `smoke-test` script to `package.json`
+  - Enables `npm run smoke-test` for fresh clone verification
+  - Links to existing `scripts/smoke-test.sh`
+
+#### Smoke Test Verification
+```
+node --version     → v22.22.1
+CLI --version      → 3.0.0
+CLI --help         → 50+ commands available
+Tests              → 764 passing
+```
+
+#### Git Status
+- Branch: main
+- Modified: `package.json`
+
+#### TODO Priority Status
+From TODO.md:
+1. ✅ CLI has --help and sample commands
+2. ✅ File handling, error messages, basic tests
+3. 🔲 Local setup path documentation
+4. ✅ Smoke test for fresh clone
+5. 🔲 Fix highest-leverage broken path
+6. ✅ WORKLOG.md created
+7. ✅ **NEW**: `npm run smoke-test` script added
+
+#### Next Bounded Steps
+1. Document local setup path in README (add "Fresh Clone Setup" section)
+2. Implement P0 scripts: bulkDeleteTweets.js, shadowbanCheck.js, accountHealth.js
+3. Investigate failing integration tests (132 failing)
+
+---
+
 ### Session Summary (17:20 CET) — Builder Engine
 
 **Status**: Active development, smoke test added

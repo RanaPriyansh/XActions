@@ -45,6 +45,7 @@
     "db:studio": "prisma studio",
     "test": "vitest run",
     "test:watch": "vitest",
+    "smoke-test": "bash scripts/smoke-test.sh",
     "test:x402": "vitest run tests/x402.test.js",
     "test:x402:integration": "vitest run tests/x402-integration.test.js",
     "test:x402:all": "vitest run tests/x402*.test.js",
