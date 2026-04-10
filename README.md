@@ -502,6 +502,37 @@ No install needed — copy-paste scripts into your browser console on x.com
 </tr>
 </table>
 
+### 🔧 Fresh Clone Setup
+
+If you cloned the repository for local development:
+
+```bash
+# 1. Clone (if you haven't)
+git clone https://github.com/nirholas/xactions.git
+cd xactions
+
+# 2. Install dependencies
+npm install
+
+# 3. Verify everything works
+npm run smoke-test
+# Or manually:
+node src/cli/index.js --help    # Should show 50+ commands
+node src/cli/index.js --version  # Should show 3.1.0
+
+# 4. Run tests (optional)
+npm test
+```
+
+**Requirements:** Node.js >= 18
+
+The smoke test validates:
+- ✓ Node.js version
+- ✓ Dependencies installed
+- ✓ CLI entry point
+- ✓ Core tests passing
+- ✓ MCP server parses
+
 ---
 
 ## 🚀 Quick Start Examples

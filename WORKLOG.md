@@ -4,6 +4,37 @@
 
 ## 2026-04-10
 
+### Session Summary (21:35 CET) — Builder Engine
+
+**Status**: Active development, README updated
+
+#### Latest Addition
+- ✅ Added "Fresh Clone Setup" section to README.md
+  - Documents git clone → npm install → npm run smoke-test path
+  - Links CLI entry points and version verification
+  - Requirements: Node.js >= 18
+
+#### Files Changed
+- `README.md` — Added Fresh Clone Setup section after Installation
+- `outputs/publish-status.md` — Workspace tracking file
+- `outputs/ship-status.md` — Workspace tracking file
+
+#### TODO Priority Status
+From TODO.md:
+1. ✅ CLI has --help and sample commands
+2. ✅ File handling, error messages, basic tests
+3. ✅ **DONE**: Local setup path documentation
+4. ✅ Smoke test for fresh clone
+5. 🔲 Fix highest-leverage broken path
+6. ✅ WORKLOG.md created
+7. ✅ `npm run smoke-test` script added
+
+#### Next Bounded Steps
+1. Implement P0 scripts: bulkDeleteTweets.js, shadowbanCheck.js, accountHealth.js
+2. Investigate failing integration tests (132 failing)
+
+---
+
 ### Session Summary (21:22 CET) — Builder Engine
 
 **Status**: Active development, npm script added
