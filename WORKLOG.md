@@ -4,6 +4,50 @@
 
 ## 2026-04-10
 
+### Session Summary (17:20 CET) — Builder Engine
+
+**Status**: Active development, smoke test added
+
+#### Latest Addition
+- ✅ Created `scripts/smoke-test.sh` — fresh clone verification
+  - Verifies Node.js >= 18
+  - Checks dependencies installed
+  - Validates CLI entry point
+  - Confirms MCP server parses
+  - Reportspass/fail summary
+  - All 6 checks passing
+
+#### Smoke Test Results
+```
+=== XActions Smoke Test ===
+✓ Node.js >= 18 (found v22.22.1)
+✓ node_modules exists (dependencies installed)
+✓ CLI --help works (50+ commands available)
+✓ CLI --version: 3.0.0
+✓ Tests: passed
+✓ MCP server.js parses correctly
+```
+
+#### Git Status
+- Branch: main
+- New file: `scripts/smoke-test.sh`
+
+#### TODO Priority Status
+From TODO.md:
+1. ✅ CLI has --help and sample commands (verified 50+ commands available)
+2. ✅ File handling, error messages, basic tests (all tests pass)
+3. 🔲 Local setup path documentation
+4. ✅ Smoke test for fresh clone ← **COMPLETED**
+5. 🔲 Fix highest-leverage broken path
+6. ✅ WORKLOG.md created (this file)
+
+#### Next Bounded Steps
+1. Document local setup path in README
+2. Add `npm run smoke-test` script to package.json
+3. Implement P0 scripts: bulkDeleteTweets.js, shadowbanCheck.js, accountHealth.js
+
+---
+
 ### Session Summary (13:34 CET)
 
 **Status**: Active development, all tests passing
@@ -28,20 +72,6 @@
 #### Git Status
 - Branch: main
 - Last commit: `227c9be fix(tests): update _meta tracking tests to match specific strategy names`
-
-#### TODO Priority Status
-From TODO.md:
-1. ✅ CLI has --help and sample commands (verified 50+ commands available)
-2. ✅ File handling, error messages, basic tests (all tests pass)
-3. 🔲 Local setup path documentation
-4. 🔲 Smoke test for fresh clone
-5. 🔲 Fix highest-leverage broken path
-6. ✅ WORKLOG.md created (this file)
-
-#### Next Bounded Steps
-1. Create smoke test for fresh clone verification
-2. Document local setup path (README, package.json scripts)
-3. Implement P0 scripts: bulkDeleteTweets.js, shadowbanCheck.js, accountHealth.js
 
 ### Architecture Notes
 
