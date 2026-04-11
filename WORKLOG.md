@@ -2,6 +2,57 @@
 
 > Tracking development progress and changes
 
+## 2026-04-11
+
+### Session Summary (05:15 CET) — Builder Engine
+
+**Status**: Active development, test fixes committed
+
+#### Latest Addition
+- ✅ Fixed 92 tests in a2a and auth modules
+  - Terminal state transitions in VALID_TRANSITIONS (undefined for terminal states)
+  - Default agent name in createAgentCard()
+  - jsonRpcSuccess/jsonRpcError parameter order (id first)
+  - Error handling in TaskExecutor for bridge errors
+  - GuestToken error messages and null checks
+  - Test assertions updated for async/await patterns
+
+#### Files Changed
+- `src/a2a/types.js` — Fixed terminal state transitions, parameter orders
+- `src/a2a/taskManager.js` — Added error handling in TaskExecutor
+- `src/client/auth/GuestToken.js` — Fixed error messages, null checks
+- `tests/a2a/taskManager.test.js` — Updated async/await patterns
+- `tests/client/auth/credentialAuth.test.js` — Added test coverage
+- `tests/client/auth/sessionValidator.test.js` — Split test expectations
+- `WORKLOG.md` — This file
+
+#### Git Status
+- Branch: main
+- Commit: `670dd5c fix(tests): improve test coverage for a2a and auth modules`
+- Pushed to origin successfully
+
+#### TODO Priority Status
+From TODO.md:
+1. ✅ CLI has --help and sample commands
+2. ✅ File handling, error messages, basic tests
+3. ✅ Local setup path documentation
+4. ✅ Smoke test for fresh clone
+5. 🔲 Fix highest-leverage broken path ← Integration tests have memory issues
+6. ✅ WORKLOG.md created
+7. ✅ `npm run smoke-test` script added
+
+#### Test Status
+- **92 tests fixed and passing** (a2a + auth modules)
+- **Integration tests still failing** — JavaScript heap out of memory issue
+- Need to investigate Node.js memory configuration for CI
+
+#### Next Bounded Steps
+1. Investigate Node.js heap memory issue for integration tests
+2. Increase memory limit in vitest config or CI
+3. Implement P0 scripts: bulkDeleteTweets.js, shadowbanCheck.js, accountHealth.js
+
+---
+
 ## 2026-04-10
 
 ### Session Summary (21:35 CET) — Builder Engine
