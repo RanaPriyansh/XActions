@@ -36,8 +36,33 @@ function makeFetchError(status, errors = []) {
 }
 
 function createMocks() {
+  // Mock CookieJar interface (jar.getValue, jar.set, etc.)
+  const jar = {
+    _cookies: new Map(),
+    getValue(name) {
+      const cookie = this._cookies.get(name);
+      return cookie ? cookie.value : null;
+    },
+    set(cookie) {
+      this._cookies.set(cookie.name, cookie);
+    },
+    get(name) {
+      return this._cookies.get(name) || null;
+    },
+    toCookieString() {
+      const parts = [];
+      for (const cookie of this._cookies.values()) {
+        parts.push(`${cookie.name}=${cookie.value}`);
+      }
+      return parts.join('; ');
+    },
+    has(name) {
+      return this._cookies.has(name);
+    }
+  };
+
   const cookieAuth = {
-    jar: new Map(),
+    jar,
     isAuthenticated: vi.fn(() => false),
     getCookieString: vi.fn(() => ''),
     updateFromResponse: vi.fn(),

@@ -317,7 +317,19 @@ export class TaskExecutor {
       this._progress.set(taskId, { step: 0, total: 1, description: `Executing ${skillId || 'task'}` });
 
       // Execute via bridge
-      const result = await this.bridge.execute(skillId, inputParts);
+      let result;
+      try {
+        result = await this.bridge.execute(skillId, inputParts);
+      } catch (err) {
+        // Bridge threw an error - mark task as failed
+        await this.store.addMessage(
+          taskId,
+          createMessage('agent', [createTextPart(`Error: ${err.message}`)])
+        );
+        await this.store.transition(taskId, TASK_STATES.FAILED, err.message);
+        this._progress.delete(taskId);
+        return this.store.get(taskId);
+      }
 
       if (result.success) {
         // Add result as artifact

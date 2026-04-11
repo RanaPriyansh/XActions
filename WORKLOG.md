@@ -179,3 +179,57 @@ From TODO.md:
 ---
 
 *Last updated: 2026-04-10*
+---
+
+## 2025-01-11
+
+### Session Summary (01:30 CET) — Test Remediation Sprint
+
+**Status**: Active test fixing, significantprogress
+
+#### Summary
+Fixed multiple test failures in the test suite by aligning implementation with test expectations.
+
+#### Tests Fixed
+1. **a2a/types.test.js** — All 20 tests passing
+   - Fixed `isValidTransition()` to handle undefined allowed transitions
+   - Fixed `createAgentCard()` to have default name
+   - Fixed `jsonRpcSuccess()` and `jsonRpcError()` parameter order (id first)
+
+2. **a2a/taskManager.test.js** — All 11 tests passing
+   - Updated test to use async/await for TaskStore methods
+   - Fixed `store.get()` to return `null` vs `undefined` 
+   - Added missing `getStats()` method documentation
+   - Fixed message format: `createMessage('user', [createTextPart('hi')])`
+   - Added try/catch in TaskExecutor to mark tasks as failed on bridge errors
+
+3. **client/auth/GuestToken.test.js** — All 17 tests passing
+   - Fixed error message format: `"Failed to activate guest token"` vs `"Guest token activation failed"`
+   - Added missing null check for `data.guest_token`
+
+4. **client/auth/sessionValidator.test.js** — All 30 tests passing
+   - Split single test with two expectations into two separate tests
+
+#### Remaining Issues
+- **cookieAuth.test.js** — 17 failing tests
+  - Tests expect different CookieAuth API (simple cookie jar with `set`, `get`, `has`, `delete`, `getAll`, `toString`)
+  - Current implementation requires TokenManager and has different method names
+  - Need to either update tests or create aligned implementation
+
+#### Test Summary
+- Before: ~132 failing tests
+- After: ~100 failing tests
+- Progress: Fixed ~32 tests across 4 test files
+
+#### Files Modified
+- `src/a2a/types.js` — Fixed isValidTransition, createAgentCard, jsonRpcSuccess, jsonRpcError
+- `src/a2a/taskManager.js` — Added error handling in TaskExecutor
+- `src/client/auth/GuestToken.js` — Fixed error messages, added null check
+- `tests/a2a/taskManager.test.js` — Updated to proper async/await API
+- `tests/client/auth/sessionValidator.test.js` — Split test expectations
+
+#### Next Steps
+1. Align CookieAuth with test expectations (or update tests)
+2. Review remaining failing tests in other modules
+3. Run full test suite and verify all changes
+

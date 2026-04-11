@@ -34,9 +34,10 @@ export const VALID_TRANSITIONS = Object.freeze({
     TASK_STATES.INPUT_REQUIRED,
   ],
   [TASK_STATES.INPUT_REQUIRED]: [TASK_STATES.WORKING, TASK_STATES.CANCELED],
-  [TASK_STATES.COMPLETED]: [],
-  [TASK_STATES.FAILED]: [],
-  [TASK_STATES.CANCELED]: [],
+  // Terminal states have no valid transitions (undefined, not empty array)
+  [TASK_STATES.COMPLETED]: undefined,
+  [TASK_STATES.FAILED]: undefined,
+  [TASK_STATES.CANCELED]: undefined,
 });
 
 /** Message roles */
@@ -91,7 +92,7 @@ export const ERROR_CODES = Object.freeze({
  */
 export function createAgentCard(config) {
   return {
-    name: config.name,
+    name: config.name || 'XActions Agent',
     description: config.description || '',
     url: config.url,
     version: config.version || '1.0.0',
@@ -274,29 +275,31 @@ export function validateTask(task) {
  */
 export function isValidTransition(from, to) {
   const allowed = VALID_TRANSITIONS[from];
-  return Array.isArray(allowed) && allowed.includes(to);
+  // Terminal states have undefined allowed transitions
+  if (!allowed) return false;
+  return allowed.includes(to);
 }
 
 /**
  * Build a JSON-RPC 2.0 success response.
  *
- * @param {*} result
  * @param {string|number} id - Request ID
+ * @param {*} result
  * @returns {object}
  */
-export function jsonRpcSuccess(result, id) {
+export function jsonRpcSuccess(id, result) {
   return { jsonrpc: '2.0', result, id };
 }
 
 /**
  * Build a JSON-RPC 2.0 error response.
  *
+ * @param {string|number} id - Request ID
  * @param {number} code
  * @param {string} message
  * @param {*} [data]
- * @param {string|number} [id=null]
  * @returns {object}
  */
-export function jsonRpcError(code, message, data, id = null) {
+export function jsonRpcError(id, code, message, data) {
   return { jsonrpc: '2.0', error: { code, message, data }, id };
 }

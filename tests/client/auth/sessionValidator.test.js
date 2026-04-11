@@ -279,6 +279,11 @@ describe('SessionValidator', () => {
       mocks.fetch.mockReturnValueOnce(makeErrorResponse(401));
 
       await expect(validator.getLoggedInUser()).rejects.toThrow(AuthenticationError);
+    });
+
+    it('throws error with expired message when session is expired', async () => {
+      mocks.fetch.mockReturnValueOnce(makeErrorResponse(401));
+
       await expect(validator.getLoggedInUser()).rejects.toThrow(/expired/);
     });
 

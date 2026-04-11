@@ -3,8 +3,9 @@
  * @author nich (@nichxbt)
  */
 
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createTaskManager } from '../../src/a2a/taskManager.js';
-import { createTextPart, TASK_STATES } from '../../src/a2a/types.js';
+import { createTextPart, TASK_STATES, createMessage } from '../../src/a2a/types.js';
 
 // Mock bridge that always succeeds
 function mockBridge(result = { success: true }) {
@@ -29,55 +30,57 @@ describe('TaskStore', () => {
 
   afterEach(() => shutdown());
 
-  it('creates a task with submitted state', () => {
-    const task = store.create({ role: 'user', parts: [createTextPart('hi')] });
+  it('creates a task with submitted state', async () => {
+    const task = await store.create({ message: createMessage('user', [createTextPart('hi')]) });
     expect(task.id).toBeDefined();
     expect(task.status.state).toBe(TASK_STATES.SUBMITTED);
   });
 
-  it('retrieves a task by id', () => {
-    const task = store.create({ role: 'user', parts: [createTextPart('hi')] });
-    const found = store.get(task.id);
+  it('retrieves a task by id', async () => {
+    const task = await store.create({ message: createMessage('user', [createTextPart('hi')]) });
+    const found = await store.get(task.id);
     expect(found).toBeDefined();
     expect(found.id).toBe(task.id);
   });
 
-  it('returns undefined for unknown id', () => {
-    expect(store.get('nonexistent')).toBeUndefined();
+  it('returns null for unknown id', async () => {
+    expect(await store.get('nonexistent')).toBeNull();
   });
 
-  it('transitions task state', () => {
-    const task = store.create({ role: 'user', parts: [createTextPart('go')] });
-    store.transition(task.id, TASK_STATES.WORKING);
-    expect(store.get(task.id).status.state).toBe(TASK_STATES.WORKING);
+  it('transitions task state', async () => {
+    const task = await store.create({ message: createMessage('user', [createTextPart('go')]) });
+    await store.transition(task.id, TASK_STATES.WORKING);
+    expect((await store.get(task.id)).status.state).toBe(TASK_STATES.WORKING);
   });
 
-  it('rejects invalid transitions', () => {
-    const task = store.create({ role: 'user', parts: [createTextPart('go')] });
-    store.transition(task.id, TASK_STATES.WORKING);
-    store.transition(task.id, TASK_STATES.COMPLETED);
-    expect(() => store.transition(task.id, TASK_STATES.SUBMITTED)).toThrow();
+  it('rejects invalid transitions', async () => {
+    const task = await store.create({ message: createMessage('user', [createTextPart('go')]) });
+    await store.transition(task.id, TASK_STATES.WORKING);
+    await store.transition(task.id, TASK_STATES.COMPLETED);
+    await expect(store.transition(task.id, TASK_STATES.SUBMITTED)).rejects.toThrow();
   });
 
-  it('emits events on transition', () => {
+  it('emits events on transition', async () => {
     const fn = vi.fn();
     store.on(fn);
-    const task = store.create({ role: 'user', parts: [createTextPart('go')] });
-    store.transition(task.id, TASK_STATES.WORKING);
+    const task = await store.create({ message: createMessage('user', [createTextPart('go')]) });
+    await store.transition(task.id, TASK_STATES.WORKING);
+    // First event is 'created', second is 'transition'
+    expect(fn).toHaveBeenCalledWith('created', task.id, expect.anything());
     expect(fn).toHaveBeenCalledWith('transition', task.id, expect.anything());
   });
 
-  it('reports stats', () => {
-    store.create({ role: 'user', parts: [createTextPart('a')] });
-    store.create({ role: 'user', parts: [createTextPart('b')] });
-    const stats = store.stats();
+  it('reports stats', async () => {
+    await store.create({ message: createMessage('user', [createTextPart('a')]) });
+    await store.create({ message: createMessage('user', [createTextPart('b')]) });
+    const stats = store.getStats();
     expect(stats.total).toBe(2);
   });
 
-  it('lists tasks', () => {
-    store.create({ role: 'user', parts: [createTextPart('a')] });
-    store.create({ role: 'user', parts: [createTextPart('b')] });
-    const list = store.list();
+  it('lists tasks via iterator', async () => {
+    await store.create({ message: createMessage('user', [createTextPart('a')]) });
+    await store.create({ message: createMessage('user', [createTextPart('b')]) });
+    const list = Array.from(store.tasks.values());
     expect(list).toHaveLength(2);
   });
 });
@@ -87,10 +90,10 @@ describe('TaskExecutor', () => {
     const bridge = mockBridge();
     const { store, executor, shutdown } = createTaskManager({ bridge });
 
-    const task = store.create({ role: 'user', parts: [createTextPart('test')] });
+    const task = await store.create({ message: createMessage('user', [createTextPart('test')]) });
     await executor.execute(task.id);
 
-    const final = store.get(task.id);
+    const final = await store.get(task.id);
     expect(final.status.state).toBe(TASK_STATES.COMPLETED);
     expect(final.artifacts).toBeDefined();
 
@@ -104,10 +107,10 @@ describe('TaskExecutor', () => {
     };
     const { store, executor, shutdown } = createTaskManager({ bridge });
 
-    const task = store.create({ role: 'user', parts: [createTextPart('fail')] });
+    const task = await store.create({ message: createMessage('user', [createTextPart('fail')]) });
     await executor.execute(task.id);
 
-    const final = store.get(task.id);
+    const final = await store.get(task.id);
     expect(final.status.state).toBe(TASK_STATES.FAILED);
 
     shutdown();
@@ -117,7 +120,7 @@ describe('TaskExecutor', () => {
     const bridge = mockBridge();
     const { store, executor, shutdown } = createTaskManager({ bridge });
 
-    const task = store.create({ role: 'user', parts: [createTextPart('hello')] });
+    const task = await store.create({ message: createMessage('user', [createTextPart('hello')]) });
     await executor.execute(task.id);
 
     expect(bridge.execute).toHaveBeenCalled();

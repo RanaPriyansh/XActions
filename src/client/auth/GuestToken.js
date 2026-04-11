@@ -73,7 +73,7 @@ export class GuestToken {
 
       if (!retryResponse.ok) {
         const text = await retryResponse.text().catch(() => '');
-        throw new Error(`Guest token activation failed on retry: HTTP ${retryResponse.status} — ${text.slice(0, 200)}`);
+        throw new Error(`Failed to activate guest token on retry: HTTP ${retryResponse.status} — ${text.slice(0, 200)}`);
       }
 
       const retryData = await retryResponse.json();
@@ -84,10 +84,13 @@ export class GuestToken {
 
     if (!response.ok) {
       const text = await response.text().catch(() => '');
-      throw new Error(`Guest token activation failed: HTTP ${response.status} — ${text.slice(0, 200)}`);
+      throw new Error(`Failed to activate guest token: HTTP ${response.status} — ${text.slice(0, 200)}`);
     }
 
     const data = await response.json();
+    if (!data.guest_token) {
+      throw new Error(`No guest_token in activation response`);
+    }
     this._token = data.guest_token;
     this._activatedAt = Date.now();
     return this._token;
