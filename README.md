@@ -29,6 +29,7 @@ Scrapers &nbsp;·&nbsp; MCP Server for AI Agents &nbsp;·&nbsp; CLI &nbsp;·&nbs
 
 <p>
   <a href="docs/mcp-setup.md"><img src="https://img.shields.io/badge/MCP_Tools-140%2B-8B5CF6?style=flat-square&logo=data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=" alt="140+ MCP Tools"></a>&nbsp;
+  <a href="docs/ai-api.md"><img src="https://img.shields.io/badge/AI_Agent_API-x402_ready-14B8A6?style=flat-square" alt="AI Agent API - x402 ready"></a>&nbsp;
   <a href="https://smithery.ai/server/xactions"><img src="https://smithery.ai/badge/xactions" alt="Smithery"></a>&nbsp;
   <a href="https://registry.modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP_Registry-deployed-6366f1?style=flat-square&logo=data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=" alt="MCP Registry"></a>&nbsp;
   <a href="Dockerfile"><img src="https://img.shields.io/badge/Docker-ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>&nbsp;
@@ -42,7 +43,7 @@ Scrapers &nbsp;·&nbsp; MCP Server for AI Agents &nbsp;·&nbsp; CLI &nbsp;·&nbs
 
 <br>
 
-[**Dashboard**](https://xactions.app) &nbsp;·&nbsp; [**npm**](https://www.npmjs.com/package/xactions) &nbsp;·&nbsp; [**Docs**](docs/getting-started.md) &nbsp;·&nbsp; [**MCP Server**](docs/mcp-setup.md) &nbsp;·&nbsp; [**Docker**](Dockerfile) &nbsp;·&nbsp; [**API Ref**](docs/api-reference.md)
+[**Dashboard**](https://xactions.app) &nbsp;·&nbsp; [**npm**](https://www.npmjs.com/package/xactions) &nbsp;·&nbsp; [**Docs**](docs/getting-started.md) &nbsp;·&nbsp; [**MCP Server**](docs/mcp-setup.md) &nbsp;·&nbsp; [**AI Agent API**](docs/ai-api.md) &nbsp;·&nbsp; [**Docker**](Dockerfile) &nbsp;·&nbsp; [**API Ref**](docs/api-reference.md)
 
 </div>
 
@@ -113,6 +114,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full details.
 - [Installation](#-installation) — npm, CLI, Docker, or browser
 - [Feature Matrix](#-complete-feature-list) — Every feature, every platform
 - [MCP Server (AI)](#-mcp-server-ai-agents) — For Claude, GPT, Cursor
+- [AI Agent API](#-ai-agent-api) — Remote pay-per-request surface for agents
 - [CLI Reference](#-cli-reference) — Command line usage
 - [Node.js API](#-nodejs-api) — Programmatic access
 - [Docker](#-docker) — One-command deployment
@@ -353,6 +355,32 @@ If you self-host the XActions API for remote AI agent access, you can optionally
 This only applies to the hosted remote API. Local mode is always free.
 
 </details>
+
+---
+
+## 🤖 AI Agent API
+
+XActions is not just a human tool. It can also act as an agent-facing primitive:
+
+- Local-first mode: run the MCP server, CLI, and browser automation for free
+- Remote agent mode: self-host `/api/ai/*` endpoints for agent-to-agent access
+- Optional monetization: enable x402 micropayments if you want agents to pay per request
+
+This creates a clean split:
+
+| Surface | Who it serves | Default cost | Best for |
+|---------|---------------|--------------|----------|
+| MCP server | Local AI agents (Claude, Cursor, GPT, Windsurf) | Free | Personal workflows and copilots |
+| CLI / Node.js | Human operators and scripts | Free | One-off tasks, cron jobs, internal tools |
+| Remote AI API | External agents over HTTP | Free by default, optionally paid via x402 | Agent commerce, marketplaces, hosted automation |
+
+Start here if you want to expose XActions as part of the agent internet:
+
+- [docs/ai-api.md](docs/ai-api.md) — remote AI API, x402 flow, pricing
+- [docs/mcp-setup.md](docs/mcp-setup.md) — local agent integration via MCP
+- [docs/agent-getting-started.md](docs/agent-getting-started.md) — 24/7 autonomous growth agent
+
+The thesis is simple: keep local use free, make remote agent access optional, and monetize the network edge only when you actually need it.
 
 ---
 

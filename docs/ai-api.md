@@ -15,6 +15,20 @@ XActions is **100% free** for all users:
 
 > **Note:** x402 micropayments are entirely optional. They're only relevant if you self-host the XActions API and want to monetize remote access for AI agents.
 
+### Choose Your Surface
+
+Use XActions in one of three ways:
+
+1. **Local MCP server** — best when Claude, Cursor, or another agent is running near the browser session and you want zero payment friction.
+2. **Local CLI / library** — best for cron jobs, scripts, and internal automations run by a human operator.
+3. **Remote AI API** — best when you want to expose XActions to external agents over HTTP and optionally charge per request with x402.
+
+A simple rule:
+
+- Keep local workflows free
+- Only turn on x402 when you are selling remote agent access
+- Treat `/api/ai/*` as the monetizable edge, not the whole product
+
 ---
 
 ## 🔐 Authentication
